@@ -1,0 +1,67 @@
+version: '3.9'
+
+#Naphakping Kanchanarungrueang 645162010003
+#0003
+#9903
+
+services:
+  sv_db:
+    image: mariadb:10.8.3
+    container_name: ctn_mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: P@ssw0rd
+      MARIADB_USER: tamamaxx
+      MARIADB_PASSWORD: P@ssw0rd
+      MARIADB_DATABASE: 0003_LAB_Exam
+    volumes:
+      - ./App_A/mariadb:/var/lib/mysql
+    networks:
+      app_net:
+    ports:
+      - "3306:3306"
+
+  sv_dbadmin:
+    image: adminer
+    container_name: ctn_adminer
+    restart: always
+    networks:
+      app_net:
+    ports:
+      - "8081:8080"
+    
+  sv_webphp:
+    image: php:7.2-apache
+    container_name: ctn_php
+    restart: always
+    networks:
+      app_net:
+    volumes:
+      - ./App_A/www/:/var/www/html
+      - ./App_A/php/conf.d/:/usr/local/etc/php/conf.d
+      - ./App_A/php/lib/:/usr/local/lib/php
+    links:
+      - "sv_db:database"
+    ports:
+      - "80:80"
+
+  sv_webgo:
+    image: golang
+    container_name: ctn_golang
+    volumes:
+      - ./App_B/go-with-compose/:/go/src/go-with-compose
+      - ./App_B/go-with-compose/www/:/go/src/go-with-compose/www
+    working_dir: /go/src/go-with-compose
+    command: 'go run main.go'
+    #command: 'sleep 7200'
+    ports:
+      - "9903:8080"
+    expose:
+      - "9903"
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default  
+
